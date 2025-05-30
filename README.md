@@ -13,4 +13,5 @@ no hay ningun not found o link a http:// o ip en vez de dominio...
 
 ``` bash
 docker compose up
+docker compose -f docker-compose.yml up --detach # prod
 ```
