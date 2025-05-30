@@ -1,0 +1,12 @@
+http:
+  routers:
+    r0:
+      entryPoints:
+        - web
+      service: s0
+      rule: Host(`www.augusto.com`)
+  services:
+    s0:
+      loadBalancer:
+        servers:
+          - url: http://wordpress:80

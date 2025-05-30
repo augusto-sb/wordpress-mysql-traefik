@@ -1,0 +1,57 @@
+name: 'traefik-test'
+
+services:
+  traefik:
+    image: 'docker.io/library/traefik:v3.4.1'
+    networks:
+      lan: {}
+    ports:
+      - 127.0.0.1:443:443/tcp
+    environment:
+      TRAEFIK_ENTRYPOINTS_WEB: 'true'
+      TRAEFIK_ENTRYPOINTS_WEB_ADDRESS: '0.0.0.0:443'
+      TRAEFIK_ENTRYPOINTS_WEB_HTTP_TLS: 'true'
+      TRAEFIK_PROVIDERS_FILE_FILENAME: '/opt/dynamic.yml'
+      TRAEFIK_PROVIDERS_FILE_WATCH: 'true'
+      TRAEFIK_LOG_LEVEL: 'TRACE'
+    volumes:
+      - type: 'bind'
+        source: './dynamic.yml'
+        target: '/opt/dynamic.yml'
+        read_only: true
+    depends_on:
+      wordpress:
+        condition: service_started
+
+  wordpress:
+    image: 'docker.io/library/wordpress:6.8.1'
+    networks:
+      lan: {}
+    depends_on:
+      db:
+        condition: service_started
+    environment:
+      WORDPRESS_DB_HOST: 'db:3306'
+      WORDPRESS_DB_USER: 'dbuser'
+      WORDPRESS_DB_PASSWORD: 'dbpass'
+      WORDPRESS_DB_NAME: 'mywp'
+      WORDPRESS_TABLE_PREFIX: 'wp'
+    tmpfs:
+      - '/var/www/html'
+
+  db:
+    image: 'docker.io/library/mysql:8.4.5'
+    networks:
+      lan: {}
+    environment:
+      MYSQL_ROOT_PASSWORD: 'asdghjksaldfkj'
+      MYSQL_DATABASE: 'mywp'
+      MYSQL_USER: 'dbuser'
+      MYSQL_PASSWORD: 'dbpass'
+    tmpfs:
+      - '/var/lib/mysql'
+
+
+networks:
+  lan:
+    driver: 'bridge'
