@@ -10,3 +10,7 @@ if you have a public ip and domain you are ready to go with letsencrypt
 ```
 no hay ningun not found o link a http:// o ip en vez de dominio...
 ```
+
+``` bash
+docker compose up
+```
