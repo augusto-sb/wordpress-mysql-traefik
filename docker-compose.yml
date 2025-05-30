@@ -14,6 +14,11 @@ services:
       TRAEFIK_PROVIDERS_FILE_FILENAME: '/opt/dynamic.yml'
       TRAEFIK_PROVIDERS_FILE_WATCH: 'true'
       TRAEFIK_LOG_LEVEL: 'TRACE'
+      #TRAEFIK_CERTIFICATESRESOLVERS_MYRES: 'true'
+      #TRAEFIK_CERTIFICATESRESOLVERS_MYRES_ACME_HTTPCHALLENGE_ENTRYPOINT: 'web'
+      #TRAEFIK_CERTIFICATESRESOLVERS_MYRES_ACME_TLSCHALLENGE: 'true'
+      #TRAEFIK_CERTIFICATESRESOLVERS_MYRES_ACME_EMAIL: 'mymail@gmail.com'
+      #TRAEFIK_CERTIFICATESRESOLVERS_MYRES_ACME_STORAGE: '/certs/acme.json'
     volumes:
       - type: 'bind'
         source: './dynamic.yml'
@@ -22,6 +27,8 @@ services:
     depends_on:
       wordpress:
         condition: service_started
+    #tmpfs:
+      #- /certs
 
   wordpress:
     image: 'docker.io/library/wordpress:6.8.1'
