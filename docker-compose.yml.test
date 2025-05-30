@@ -1,42 +1,36 @@
 name: 'wordpress'
 
+
+
 services:
   traefik:
     image: 'docker.io/library/traefik:v3.4.1'
     networks:
       lan: {}
     ports:
-      - name: https
-        target: 443
-        host_ip: 127.0.0.1
-        published: "443"
-        protocol: tcp
-        app_protocol: https
-        #mode: host
+      - 127.0.0.1:443:443/tcp
     environment:
       TRAEFIK_ENTRYPOINTS_WEB: 'true'
       TRAEFIK_ENTRYPOINTS_WEB_ADDRESS: '0.0.0.0:443'
       TRAEFIK_ENTRYPOINTS_WEB_HTTP_TLS: 'true'
       TRAEFIK_PROVIDERS_FILE_FILENAME: '/opt/dynamic.yml'
       TRAEFIK_PROVIDERS_FILE_WATCH: 'true'
-      TRAEFIK_LOG_LEVEL: 'ERROR'
-      TRAEFIK_CERTIFICATESRESOLVERS_MYRES: 'true'
-      TRAEFIK_CERTIFICATESRESOLVERS_MYRES_ACME_HTTPCHALLENGE_ENTRYPOINT: 'web'
-      TRAEFIK_CERTIFICATESRESOLVERS_MYRES_ACME_TLSCHALLENGE: 'true'
-      TRAEFIK_CERTIFICATESRESOLVERS_MYRES_ACME_EMAIL: 'mymail@gmail.com'
-      TRAEFIK_CERTIFICATESRESOLVERS_MYRES_ACME_STORAGE: '/certs/acme.json'
+      TRAEFIK_LOG_LEVEL: 'TRACE'
+      #TRAEFIK_CERTIFICATESRESOLVERS_MYRES: 'true'
+      #TRAEFIK_CERTIFICATESRESOLVERS_MYRES_ACME_HTTPCHALLENGE_ENTRYPOINT: 'web'
+      #TRAEFIK_CERTIFICATESRESOLVERS_MYRES_ACME_TLSCHALLENGE: 'true'
+      #TRAEFIK_CERTIFICATESRESOLVERS_MYRES_ACME_EMAIL: 'mymail@gmail.com'
+      #TRAEFIK_CERTIFICATESRESOLVERS_MYRES_ACME_STORAGE: '/certs/acme.json'
     volumes:
       - type: 'bind'
         source: './dynamic.yml'
         target: '/opt/dynamic.yml'
         read_only: true
-      - type: 'volume'
-        source: certs
-        target: '/certs'
-        read_only: false
     depends_on:
       wordpress:
         condition: service_started
+    #tmpfs:
+      #- /certs
 
   wordpress:
     image: 'docker.io/library/wordpress:6.8.1'
@@ -51,11 +45,8 @@ services:
       WORDPRESS_DB_PASSWORD: 'dbpass'
       WORDPRESS_DB_NAME: 'mywp'
       WORDPRESS_TABLE_PREFIX: 'wp'
-    volumes:
-      - type: 'volume'
-        source: html
-        target: '/var/www/html'
-        read_only: false
+    tmpfs:
+      - '/var/www/html'
 
   db:
     image: 'docker.io/library/mysql:8.4.5'
@@ -66,28 +57,11 @@ services:
       MYSQL_DATABASE: 'mywp'
       MYSQL_USER: 'dbuser'
       MYSQL_PASSWORD: 'dbpass'
-    volumes:
-      - type: 'volume'
-        source: db
-        target: '/var/lib/mysql'
-        read_only: false
+    tmpfs:
+      - '/var/lib/mysql'
 
 
 
 networks:
   lan:
     driver: 'bridge'
-    name: 'wordpress'
-
-
-
-volumes:
-  db:
-    name: 'wordpress_db'
-    driver: 'local'
-  html:
-    name: 'wordpress_html'
-    driver: 'local'
-  certs:
-    name: 'traefik_certs'
-    driver: 'local'
